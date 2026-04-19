@@ -238,7 +238,7 @@ WHERE name LIKE '%an%'
 ```
 
 **Explanation:**
-`LIKE '%an%'` matches any name containing the substring 'an' anywhere — this matches 'Brandon', 'Marcus' (no match), 'Diana' (matches 'an'), 'Anna' (matches 'an'). Wait — let us trace through: 'Brandon' contains 'an', 'Diana' contains 'an', 'Marcus' does not, 'Anna' contains 'an' (position 1-2), 'Stanley' contains 'an'. After applying all three conditions: `manager_id IS NULL` keeps Brandon, Marcus, Anna. `hire_date < '2020-01-01'` removes Anna (hired 2021). Of those, `LIKE '%an%'` keeps Brandon ('an' in 'Brandon'). The correct result is Brandon Lee only. Notice how combining conditions narrows the result significantly.
+All three conditions apply simultaneously via `AND`. `LIKE '%an%'` matches names containing the substring 'an': Brandon (Br-**an**-don), Diana (Di-**an**-a), Anna (**An**na), Stanley (St-**an**-ley) all match; Marcus (M-a-r-c-u-s) does not. Of those four, `manager_id IS NULL` eliminates Diana (manager_id = 1) and Stanley (manager_id = 1), leaving Brandon, and Anna. `hire_date < '2020-01-01'` then eliminates Anna (hired 2021-02-10). The correct result is Brandon Lee only. Notice how combining conditions narrows the result significantly.
 
 ### Problem 3
 Demonstrate the `NOT IN` null trap: write two queries against a table with a `manager_id` column that includes NULL values. The first uses `NOT IN` with a subquery that returns NULLs, and the second uses the correct alternative. Explain why the first returns no rows.

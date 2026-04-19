@@ -164,25 +164,36 @@ INSERT INTO accounts (owner, balance) VALUES ('Alice', 1000.00), ('Bob', 200.00)
 
 **Solution:**
 ```sql
-START TRANSACTION;
+-- IF...THEN control flow is only valid inside a stored procedure, function, or trigger.
+-- Wrap the transaction logic in a stored procedure:
+DELIMITER $$
+CREATE PROCEDURE transfer_funds(
+    IN from_id INT UNSIGNED,
+    IN to_id   INT UNSIGNED,
+    IN amount  DECIMAL(10, 2)
+)
+BEGIN
+    DECLARE new_balance DECIMAL(10, 2);
+    START TRANSACTION;
+    UPDATE accounts SET balance = balance - amount WHERE id = from_id;
+    SET new_balance = (SELECT balance FROM accounts WHERE id = from_id);
+    IF new_balance < 0 THEN
+        ROLLBACK;
+        SELECT 'Transfer failed: insufficient funds' AS result;
+    ELSE
+        UPDATE accounts SET balance = balance + amount WHERE id = to_id;
+        COMMIT;
+        SELECT 'Transfer successful' AS result;
+    END IF;
+END$$
+DELIMITER ;
 
-UPDATE accounts SET balance = balance - 300.00 WHERE id = 1;
-
--- Verify the balance is still non-negative after the deduction:
-SET @new_balance = (SELECT balance FROM accounts WHERE id = 1);
-
-IF @new_balance < 0 THEN
-    ROLLBACK;
-    SELECT 'Transfer failed: insufficient funds' AS result;
-ELSE
-    UPDATE accounts SET balance = balance + 300.00 WHERE id = 2;
-    COMMIT;
-    SELECT 'Transfer successful' AS result;
-END IF;
+-- Execute the transfer:
+CALL transfer_funds(1, 2, 300.00);
 ```
 
 **Explanation:**
-The `CHECK (balance >= 0)` constraint (MySQL 8.0.16+) on the accounts table provides a database-level safety net — if the application code fails to catch a negative balance, the constraint prevents the commit. The explicit check after the deduction and `ROLLBACK` handles the case gracefully at the application level. Note that in application code, this logic would typically live in a stored procedure or in the application's transaction handling, not in raw SQL session variables. The `FOR UPDATE` locking shown in the stored procedures example is also important in concurrent systems to prevent race conditions.
+`IF...THEN...ELSE...END IF` is procedural control flow and is only valid inside a stored procedure, function, or trigger — it cannot appear as a standalone statement in a plain SQL session. Wrapping the transaction in a stored procedure solves this. The `CHECK (balance >= 0)` constraint (MySQL 8.0.16+) provides a database-level safety net as a second line of defence: if the balance goes negative despite the guard, MySQL raises an error and the transaction can be rolled back. The `FOR UPDATE` row lock is important in concurrent systems to prevent race conditions when two sessions try to debit the same account simultaneously.
 
 ### Problem 2
 Demonstrate the difference between autocommit mode and explicit transactions by showing how changes are committed with and without `START TRANSACTION`.

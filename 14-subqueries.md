@@ -182,7 +182,7 @@ WHERE p.price > cat_avg.avg_price;
 ```
 
 **Explanation:**
-The correlated subquery approach evaluates the average for each product's category once per product row — if there are 1000 products in 10 categories, the inner query runs 1000 times. The join approach computes the average for each category once (10 executions) and then joins it back to the products, which is more efficient for large datasets. Both approaches return the same result: Widget Pro (12.99 vs average 9.16) and Gadget Pro (49.99 vs average 34.99) and Gadget Max (34.99 is above average only if we recheck: avg of 19.99, 49.99, 34.99 = 34.99, so Gadget Max is exactly at average, not above).
+The correlated subquery approach evaluates the average for each product's category once per product row — if there are 1000 products in 10 categories, the inner query runs 1000 times. The join approach computes the average for each category once (10 executions) and then joins it back to the products, which is more efficient for large datasets. Both approaches return the same result: Widget Pro (12.99 vs Widgets average 9.16) and Gadget Pro (49.99 vs Gadgets average 34.99). Widget Ultra (8.49) is below the Widgets average and is excluded. Gadget Lite (19.99) and Gadget Max (34.99) are both at or below the Gadgets average of 34.99 — because the query uses strict `>`, Gadget Max at exactly the average is also excluded.
 
 ### Problem 2
 Write a query using `EXISTS` that finds all categories that have at least one product with a price below $10. Then write the equivalent query using `IN` with a subquery.
