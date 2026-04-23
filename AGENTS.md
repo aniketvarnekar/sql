@@ -1,14 +1,14 @@
-# CLAUDE.md — MySQL Notes Project
+# AGENTS.md — MySQL Notes Project
 
 ## Project Structure
 
 All note files live directly inside `mysql-notes/` with no subfolders. The directory contains:
 
 - `README.md` — project overview and table of contents
-- `CLAUDE.md` — this file; instructions for future Claude Code sessions
+- `AGENTS.md` — this file; instructions for future AI agent sessions
 - `01-introduction-to-databases.md` through `30-json-in-mysql.md` — topic files, numbered sequentially
 
-There are no nested directories. Every `.md` file except `README.md` and `CLAUDE.md` is a numbered topic file.
+There are no nested directories. Every `.md` file except `README.md` and `AGENTS.md` is a numbered topic file.
 
 ## Adding a New Topic File
 
