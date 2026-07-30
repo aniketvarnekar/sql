@@ -1,0 +1,25 @@
+# Module 14 — Transactions & Concurrency
+
+## Module Goal
+
+By the end of this module, you will understand how a database keeps data correct and reliable when many statements — and many different users — touch the same data at the same time. You will know precisely what a **transaction** is, how to control one explicitly with `BEGIN`, `COMMIT`, and `ROLLBACK`, what the four **ACID properties** guarantee (and what breaks without each one), how PostgreSQL's **isolation levels** trade off correctness against concurrency, what the three classic read anomalies (**dirty reads**, **non-repeatable reads**, **phantom reads**) actually look like when two transactions run at once, how the database physically enforces safety through **locks**, and what a **deadlock** is and how PostgreSQL automatically survives one. Every module before this one has been about a single statement changing or reading data in isolation. This module is about what happens the instant a second connection shows up and starts changing or reading the *same* data — which is not a rare edge case, it is the normal condition of every real production database.
+
+## Topics Covered in This Module
+
+1. **[ACID Properties](01-acid-properties.md)** — Atomicity, Consistency, Isolation, and Durability, each explained through a bank-transfer scenario showing exactly what goes wrong without it.
+2. **[BEGIN, COMMIT, and ROLLBACK](02-begin-commit-rollback.md)** — PostgreSQL's default autocommit behavior, explicit transaction blocks, undoing a transaction with `ROLLBACK`, and partial rollback with `SAVEPOINT`.
+3. **[Isolation Levels](03-isolation-levels.md)** — the SQL standard's four isolation levels, which of them PostgreSQL actually implements as distinct behaviors, and how to set the isolation level for a transaction.
+4. **[Dirty Reads, Non-Repeatable Reads, and Phantom Reads](04-dirty-nonrepeatable-and-phantom-reads.md)** — precise definitions of the three classic concurrency anomalies, each walked through as a two-transaction timeline, plus a table of which isolation level prevents which anomaly.
+5. **[Locking Fundamentals](05-locking-fundamentals.md)** — row-level vs. table-level locks, shared vs. exclusive locks, how `UPDATE`/`DELETE` implicitly acquire locks, `SELECT ... FOR UPDATE`, and what it means for a transaction to block and wait.
+6. **[Deadlocks](06-deadlocks.md)** — what a deadlock is, a concrete two-transaction example that deadlocks, how PostgreSQL detects and resolves deadlocks automatically, and practices that avoid them.
+7. **[Module Summary](07-module-summary.md)** — Consolidated recap.
+
+## Prerequisites
+
+- **Module 6 (Modifying Data)** — this entire module is about what wraps around `INSERT`, `UPDATE`, and `DELETE` (see the [Module 6 overview](../06-modifying-data/00-module-overview.md)). Every transaction example here is built from statements you already know how to write; what's new is the guarantee that surrounds them, not the statements themselves.
+- **Module 1 (Introduction)**, specifically [What Is a Database and a DBMS?](../01-introduction/01-what-is-a-database-and-a-dbms.md) — that topic first introduced, conceptually, that a DBMS "coordinates access so simultaneous changes don't collide destructively" and that it "guarantees a change either fully happens or not at all." This module is the full technical explanation of exactly how the DBMS delivers on both of those promises. [Categories of SQL Commands](../01-introduction/03-categories-of-sql-commands.md) also introduced the term TCL (Transaction Control Language) and the keywords `BEGIN`, `COMMIT`, `ROLLBACK`, and `SAVEPOINT` by name — this module is the deep dive into that entire category.
+- **Module 5 (Constraints & Keys)** — constraints (`CHECK`, `NOT NULL`, foreign keys) are enforced as part of a transaction's correctness guarantees; the Consistency property in Topic 1 leans directly on constraint enforcement introduced there.
+
+## How to Study This Module
+
+Read Topics 1 and 2 first and don't rush them — ACID is the vocabulary every later topic assumes, and `BEGIN`/`COMMIT`/`ROLLBACK`/`SAVEPOINT` are the actual syntax you'll use for the rest of the module (and the rest of your SQL-writing life). Topics 3 and 4 are a matched pair: Topic 3 names the four standard isolation levels and how PostgreSQL implements them, and Topic 4 defines the exact anomalies those levels prevent or allow — it is worth re-reading Topic 3's isolation level descriptions again immediately after finishing Topic 4, once the anomalies have concrete names and timelines attached to them. Topics 5 and 6 shift from *what the database guarantees* to *how it mechanically enforces that guarantee* — locks are the machinery underneath everything in Topics 1–4, and deadlocks are the one sharp edge that machinery has. By the end of this module you should be able to look at any multi-step data change in a real application (placing an order, transferring funds, reserving a seat) and know exactly how to wrap it safely, and what could still go wrong if two people did it at the exact same instant.
